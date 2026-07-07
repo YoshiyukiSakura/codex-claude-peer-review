@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Claude Peer Review"
+  short_description: "Adversarial Codex/Claude evidence review"
+  default_prompt: "Use $codex-claude-peer-review to have Codex and Claude Code challenge the evidence, resolve disagreements, and return a converged decision."
