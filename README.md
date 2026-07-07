@@ -10,6 +10,10 @@ The skill is designed for situations where model agreement is not enough. The fi
 - `agents/openai.yaml`: display metadata for the Codex skill interface.
 - `scripts/check_repo.py`: repository validation for required files and common secret patterns.
 - `.github/workflows/validate.yml`: GitHub Actions workflow that runs the validation script.
+- `.gitattributes`: text normalization for cross-platform checkouts.
+- `.gitignore`: local development ignore rules.
+- `LICENSE`: MIT license text.
+- `README.md`: project overview, installation, and validation notes.
 
 ## When To Use It
 
@@ -58,6 +62,8 @@ python3 "$CODEX_HOME/skills/codex-claude-peer-review/scripts/check_repo.py"
 - Claude Code CLI for the external review path.
 - Kimi CLI is optional and is used only as a fallback when Claude Code is unavailable.
 
+Claude Code model aliases and flags can vary by CLI version and account access. Run `claude --version` and `claude -p --help` in your environment, use only aliases accepted by your local CLI, and do not publish private model codenames or unreleased model identifiers in prompts, issues, or pull requests.
+
 The repository does not include credentials. Do not put API keys, tokens, passwords, private customer data, or other secrets in prompts, commits, issues, or pull requests.
 
 ## Local Validation
@@ -69,6 +75,8 @@ python3 scripts/check_repo.py
 ```
 
 The script verifies required project files, skill metadata, agent metadata, and common high-risk secret patterns.
+
+This validation is a repository sanity check. It proves that required files exist, metadata is internally consistent, and the checked tree does not match the secret patterns listed in `scripts/check_repo.py`. It does not prove that the skill loads in every Codex version, that every Claude Code command works in every account, or that git history has been scanned by a dedicated secret-scanning product.
 
 ## License
 

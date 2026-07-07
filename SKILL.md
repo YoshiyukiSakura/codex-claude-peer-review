@@ -60,13 +60,12 @@ Use the local Claude Code CLI only when Codex starts the loop. Verify current CL
 Difficulty routing:
 
 - High difficulty:
-  - Request CLI model id `claude-fable-5` with `medium` effort when available.
-  - This is the executable high-difficulty route. If the user says `fable 5`, treat that as shorthand for this route, not as a CLI model string.
-  - If `claude-fable-5` is unavailable, rerun with `opus` and `xhigh` effort, then report the actual fallback. The current CLI may show the actual model as `claude-opus-4-8`.
+  - Request CLI model alias `opus` with `xhigh` effort when available.
+  - If `opus` is unavailable, rerun with `sonnet` and `high` effort, or the strongest currently documented alias shown by `claude -p --help`, then report the actual fallback command.
   - Use for architecture decisions, difficult root-cause analysis, risky merge/blocker judgments, cross-system workflows, security-sensitive work, and high-impact conclusions.
 - Medium difficulty:
   - Request CLI model alias `opus` with `xhigh` effort.
-  - This is the executable medium-difficulty route. If the user says `opus 4.8`, treat that as shorthand for this route, not as a CLI model string.
+  - If `opus` is unavailable or too slow for the task, reroute to `sonnet` with `high` effort and record the fallback.
   - Use for normal investigations, implementation review, PR/MR review, localized technical decisions, and moderate-risk plans.
 - Low difficulty:
   - Skip Claude unless the user asked for bilateral review or the task becomes riskier than it first appeared.
@@ -77,13 +76,13 @@ Use one of these command patterns.
 Strict no-tool review, preferred when the evidence package fits in the prompt:
 
 ```bash
-claude -p --verbose --model claude-fable-5 --effort medium --output-format stream-json --include-partial-messages --tools "" --no-session-persistence "$REVIEW_PROMPT"
+claude -p --verbose --model opus --effort xhigh --output-format stream-json --include-partial-messages --tools "" --no-session-persistence "$REVIEW_PROMPT"
 ```
 
-High-difficulty fallback when `claude-fable-5` is unavailable:
+Fallback when `opus` is unavailable:
 
 ```bash
-claude -p --verbose --model opus --effort xhigh --output-format stream-json --include-partial-messages --tools "" --no-session-persistence "$REVIEW_PROMPT"
+claude -p --verbose --model sonnet --effort high --output-format stream-json --include-partial-messages --tools "" --no-session-persistence "$REVIEW_PROMPT"
 ```
 
 Read-only file review, used when Claude must inspect local files:
@@ -95,12 +94,12 @@ claude -p --verbose --model opus --effort xhigh --output-format stream-json --in
 Legacy read-only route, used only when the local CLI does not support `--tools` as expected:
 
 ```bash
-claude -p --verbose --model claude-fable-5 --effort medium --output-format stream-json --include-partial-messages --permission-mode plan --disallowedTools Bash,Edit,Write,NotebookEdit --no-session-persistence "$REVIEW_PROMPT"
+claude -p --verbose --model opus --effort xhigh --output-format stream-json --include-partial-messages --permission-mode plan --disallowedTools Bash,Edit,Write,NotebookEdit --no-session-persistence "$REVIEW_PROMPT"
 ```
 
 Rules for invocation:
 
-- Do not pass display strings such as `fable 5` or `opus 4.8` to `--model`; use CLI ids or aliases such as `claude-fable-5` or `opus`.
+- Do not pass marketing names, display strings, private model codenames, or unreleased model identifiers to `--model`; use public CLI aliases such as `opus` or `sonnet` that are accepted by the local `claude -p --help` output.
 - Treat model aliases as requests, not guarantees. If the CLI rejects a model, record the rejected alias and the actual fallback command.
 - Do not include `MultiEdit` in `--disallowedTools`; this local Claude CLI has rejected that tool name in prior use.
 - Prefer `--tools ""` for pure prompt review because it prevents file writes, shell commands, and subagent delegation.

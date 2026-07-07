@@ -12,6 +12,8 @@ REQUIRED_FILES = [
     "README.md",
     "LICENSE",
     ".gitignore",
+    ".gitattributes",
+    ".github/workflows/validate.yml",
 ]
 
 SECRET_PATTERNS = {
@@ -21,6 +23,11 @@ SECRET_PATTERNS = {
     "OpenAI-style key": re.compile(r"sk-[A-Za-z0-9]{20,}"),
     "AWS access key": re.compile(r"AKIA[0-9A-Z]{16}"),
     "Private key block": re.compile(r"-----BEGIN [A-Z ]+ PRIVATE KEY-----"),
+    "Slack token": re.compile(r"xox[baprs]-[A-Za-z0-9-]{20,}"),
+    "Stripe live key": re.compile(r"(?:sk|rk)_live_[A-Za-z0-9]{20,}"),
+    "Google API key": re.compile(r"AIza[0-9A-Za-z_-]{35}"),
+    "Basic auth URL": re.compile(r"https?://[^\s/:]+:[^\s/@]+@"),
+    "Local macOS user path": re.compile(r"/Users/[A-Za-z0-9._-]+/"),
 }
 
 
@@ -42,16 +49,24 @@ def check_required_files() -> None:
 
 def check_skill_metadata() -> None:
     text = read_text("SKILL.md")
-    if not text.startswith("---\n"):
+    lines = text.splitlines()
+    if not lines or lines[0] != "---":
         fail("SKILL.md must start with YAML front matter")
-    if "name: codex-claude-peer-review" not in text:
+    try:
+        end_index = lines[1:].index("---") + 1
+    except ValueError:
+        fail("SKILL.md must close YAML front matter")
+    front_matter = "\n".join(lines[1:end_index])
+    if "name: codex-claude-peer-review" not in front_matter:
         fail("SKILL.md must declare name: codex-claude-peer-review")
-    if "description:" not in text:
+    if "description:" not in front_matter:
         fail("SKILL.md must include a description")
 
 
 def check_agent_metadata() -> None:
     text = read_text("agents/openai.yaml")
+    if "interface:\n" not in text.replace("\r\n", "\n"):
+        fail("agents/openai.yaml must define the interface mapping")
     required_fragments = [
         'display_name: "Codex Claude Peer Review"',
         'short_description: "Adversarial Codex/Claude evidence review"',
